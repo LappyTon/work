@@ -1,0 +1,68 @@
+package net.jasper.mod.util.keybinds;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.jasper.mod.gui.QuickMenu;
+import net.jasper.mod.mixins.accessors.KeyBindingAccessor;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.util.InputUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Class to initialize and handle all keybinds
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class PlayerautomaKeyBinds {
+
+    private static final List<KeyBind> keyBinds = new ArrayList<>();
+
+    @SuppressWarnings("java:S3776")
+    public static void register() {
+        keyBinds.addAll(List.of(Constants.defaultKeybinds));
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) {
+                return;
+            }
+            handleKeyPresses();
+        });
+
+
+        ClientTickEvents.START_CLIENT_TICK.register(context -> {
+        MinecraftClient client = MinecraftClient.getInstance();
+            if (client.world == null || client.player == null) {
+                return;
+            }
+
+            KeyBindingAccessor keyBindingAccessor = (KeyBindingAccessor)Constants.QUICK_MENU;
+
+            // Handle quickMenu if bound. Unbound mean code is -1
+            if (keyBindingAccessor.getBoundKey().getCode() == -1) {
+                return;
+            }
+
+            boolean menuOpenPressed = InputUtil.isKeyPressed(client.getWindow(), keyBindingAccessor.getBoundKey().getCode());
+            if (!(client.currentScreen instanceof QuickMenu || client.currentScreen instanceof GameMenuScreen) && menuOpenPressed && !QuickMenu.wasClosed()) {
+                QuickMenu.open();
+            }
+
+            if (client.currentScreen instanceof QuickMenu && !menuOpenPressed) {
+                client.currentScreen.close();
+            }
+
+            // Reset flag to enable opening the menu again whenever open key not pressed
+            if (!menuOpenPressed) {
+                QuickMenu.setClosed(false);
+            }
+        });
+    }
+
+    public static void handleKeyPresses() {
+        for (KeyBind b : keyBinds) {
+            b.execute();
+        }
+    }
+}

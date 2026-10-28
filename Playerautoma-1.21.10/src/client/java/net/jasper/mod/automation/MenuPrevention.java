@@ -1,0 +1,71 @@
+package net.jasper.mod.automation;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.jasper.mod.gui.option.PlayerautomaOptionsScreen;
+import net.jasper.mod.util.ClientHelpers;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.screen.ScreenTexts;
+import net.minecraft.text.Text;
+
+import static net.jasper.mod.util.Textures.HUD.BLOCK_MENU_ICON;
+
+/**
+ * Class to track state and implement menu prevention that allows for replays to work in background
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class MenuPrevention {
+
+    public static boolean preventToBackground = false;
+    public static boolean registered = false;
+
+    public static void register() {
+        registered = true;
+    }
+
+    public static void renderIcon(DrawContext context) {
+        // Rendering the texture to show that menu opening is blocked anda the mouse can be used freely
+        // This is always on and should never be effected by showHUDOption
+        if (preventToBackground) {
+            MinecraftClient client = MinecraftClient.getInstance();
+            // Texture is 24x24. Scale it with guiScale
+            int scaledSizeBlockMenu = 24 * ClientHelpers.getGuiScale();
+            int xBlockMenu = client.getWindow().getScaledWidth() / 2 - scaledSizeBlockMenu / 2;
+            int yBlockMenu = client.getWindow().getScaledHeight() / 2 - scaledSizeBlockMenu / 2;
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, BLOCK_MENU_ICON, xBlockMenu, yBlockMenu, 0, 0, scaledSizeBlockMenu, scaledSizeBlockMenu, scaledSizeBlockMenu, scaledSizeBlockMenu);
+        }
+    }
+
+    public static void toggleBackgroundPrevention() {
+        toggleBackgroundPrevention(false);
+    }
+
+    public static void toggleBackgroundPrevention(boolean displayMessage) {
+        if (!registered) {
+            return;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player == null) {
+            return;
+        }
+
+        // Do not allow background prevention to be toggled while a screen is opened
+        if (client.currentScreen != null) {
+            return;
+        }
+
+        preventToBackground = !preventToBackground;
+
+        if (Boolean.TRUE.equals(PlayerautomaOptionsScreen.writeStateToActionBarOption.getValue()) && displayMessage) {
+            ClientHelpers.writeToActionBar(Text.translatable("playerautoma.messages.menuPreventionToggle").append(preventToBackground ? ScreenTexts.ON : ScreenTexts.OFF));
+        }
+
+        int mouseMode = preventToBackground ? InputUtil.GLFW_CURSOR_NORMAL : InputUtil.GLFW_CURSOR_DISABLED;
+        InputUtil.setCursorParameters(client.getWindow(), mouseMode, client.mouse.getX(), client.mouse.getY());
+        // The icon is rendered accordingly in mod.gui.PlayerautomaHUD
+    }
+}

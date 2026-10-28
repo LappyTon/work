@@ -1,0 +1,18 @@
+{
+  "projectPath": ":",
+  "classpaths": {
+    "test": [
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/build/classes/java/test",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/build/resources/test",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/out/test/classes",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/out/test/resources"
+    ],
+    "main": [
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/build/classes/java/main",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/build/resources/main",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/build/devlibs/No-Miss-1.0-dev.jar",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/out/production/classes",
+      "/home/lappy/work/No-Miss-1.21.9-1.21.10/out/production/resources"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "test",
+  "version": "${version}",
+  "name": "test",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/test/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-datagen": [
+      "net.hook.test.client.TestDataGenerator"
+    ],
+    "client": [
+      "net.hook.test.client.TestClient"
+    ],
+    "main": [
+      "net.hook.test.Test"
+    ]
+  },
+  "mixins": [
+    "test.mixins.json",
+    {
+      "config": "test.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

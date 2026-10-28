@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "no-miss",
+  "version": "1.0",
+  "name": "No Miss",
+  "description": "Prevents hitting when no entity is in crosshair",
+  "authors": ["Seyit"],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/no-miss/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "me.seyit.NoMissClient"
+    ]
+  },
+  "mixins": [
+    "no-miss.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "fabric-api": "*",
+    "minecraft": ">=1.21.9"
+  }
+}

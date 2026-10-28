@@ -1,0 +1,105 @@
+package net.jasper.mod;
+
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.jasper.mod.automation.*;
+import net.jasper.mod.gui.PlayerautomaHUD;
+import net.jasper.mod.gui.RecordingSelectorScreen;
+import net.jasper.mod.gui.option.PlayerautomaOptionsScreen;
+import net.jasper.mod.util.keybinds.PlayerautomaKeyBinds;
+import net.minecraft.client.MinecraftClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
+/**
+ * Main Class for the Client-Side of the Mod. Registers all Keybinds and Automations
+ */
+public class PlayerautomaClient implements ClientModInitializer {
+
+	public static final String MOD_ID = "playerautoma";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID + "::client");
+
+	public static final String OPTION_FILE_NAME = "playerautoma_options.txt";
+	public static final String PLAYERAUTOMA_FOLDER_PATH = Path.of(MinecraftClient.getInstance().runDirectory.getAbsolutePath(), MOD_ID).toString();
+	public static final String PLAYERAUTOMA_RECORDING_PATH = Path.of(PLAYERAUTOMA_FOLDER_PATH, "recordings").toString();
+	public static final String PLAYERAUTOMA_QUICKSLOT_PATH = Path.of(PLAYERAUTOMA_FOLDER_PATH, "quickslots").toString();
+	public static final String PLAYERAUTOMA_OPTIONS_FILE_PATH = Path.of(PLAYERAUTOMA_FOLDER_PATH, OPTION_FILE_NAME).toString();
+
+	public static final List<String> REQUIRED_FOLDERS = List.of(
+			PLAYERAUTOMA_FOLDER_PATH,
+			PLAYERAUTOMA_RECORDING_PATH,
+			PLAYERAUTOMA_QUICKSLOT_PATH
+	);
+
+	public static String getVersion() {
+		return FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion().getFriendlyString();
+	}
+
+
+	// Will be executed in mixin after client has been fully initialized
+	public static void initializeAfterClient() {
+		// Loading textures required the texture manager to be created which is not the case when run in "onInitializeClient"
+		// Register Quick slots for Player-Recorder, requires KeyBindings to be registered first
+		QuickSlots.register();
+
+		// Load thumbnails from stored recordings to prevent lag on first opening of load recording screen
+		RecordingSelectorScreen.loadThumbnails();
+	}
+
+
+	@Override
+	public void onInitializeClient() {
+		LOGGER.info("Playerautoma {} is starting...", getVersion());
+		// Create all required folders
+		for (String path : REQUIRED_FOLDERS) {
+			File required = new File(path);
+			if (!required.exists()) {
+				boolean failed = required.mkdirs();
+				// Do not initialize mod if failed to create folder (should not happen)
+				if (!failed) {
+					LOGGER.error("Failed to create folder {}. Playerautoma will not be initialized", required.getName());
+					return;
+				}
+			}
+		}
+
+		// If not present create the option file
+		File optionFile = new File(PLAYERAUTOMA_OPTIONS_FILE_PATH);
+		new PlayerautomaOptionsScreen(null);
+		if (!optionFile.exists()) {
+			boolean success = false;
+			try {
+				success = optionFile.createNewFile();
+			} catch (IOException exception) {
+				// Ignored. 'success' stays false and therefore doing nothing is valid
+			}
+			if (!success) {
+				LOGGER.error("Failed to create Playerautoma options. Playerautoma will not be initialized");
+				return;
+			}
+		}
+
+		// Initialize New Keybinds
+		PlayerautomaKeyBinds.register();
+
+		// Register Inventory-Automations (Re-Stacking of Blocks)
+		InventoryAutomation.register();
+
+		// Register Player-Recorder (Recording & Replaying)
+		PlayerRecorder.register();
+
+		// Register HUD element for state of Player-Recorder
+		PlayerautomaHUD.register();
+
+		// Register Commands to control the Player-Recorder
+		Commands.register();
+
+		// Register MenuPrevention. That allows to run Recording with minecraft in the background.
+		MenuPrevention.register();
+	}
+}

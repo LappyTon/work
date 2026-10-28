@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "net.jasper.mod.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "client": [
+    "ClientPlayerNetworkHandlerMixin",
+    "HandledScreenMixin",
+    "KeyboardMixin",
+    "MerchantScreenMixin",
+    "MinecraftClientMixin",
+    "ScreenMixin",
+    "ClientPlayerInteractionManagerMixin",
+    "accessors.KeyBindingAccessor",
+    "accessors.MerchantScreenAccessor",
+    "accessors.NativeImageAccessor",
+    "accessors.ScreenAccessor"
+  ]
+}
